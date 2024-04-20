@@ -55,7 +55,7 @@ for (i in 1:500){
   if (u[i]<(4/10)){
     y[i] <- rnorm(1)
   }
-  else if(u[i]<8/10){
+  else if(u[i]<(8/10)){
     y[i] <- rnorm(1, 2, 1)
   }
   else{
@@ -63,6 +63,8 @@ for (i in 1:500){
   }
 }
 
-curve(dnorm(x, 1.6, (0.48)^(1/2)), 0, 8)
-hist(y, freq=FALSE, add=TRUE)
-lines(density(y, kernel="gaussian"))
+liczba_klas = ceiling((max(y) - min(y))/(2*IQR(y)*length(y)^(-1/3)))
+curve(dnorm(x, 1.6, (0.48)^(1/2)), -4, 10, col="red", ylab="y")
+hist(y, liczba_klas, freq=FALSE, add=TRUE, col="yellow")
+lines(density(y, kernel="gaussian"), col="blue")
+legend("topright", legend=c("gęstość", "histogram z regułą F-D", "estymator jądrowy z regułą Silvermana"), fill=c("red", "yellow", "blue"))

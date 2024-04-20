@@ -1,0 +1,191 @@
+% !Rnw weave = knitr  
+\documentclass[12pt, a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[colorlinks=true, linkcolor=blue]{hyperref}
+\usepackage{amsmath, amsthm, amssymb, amscd}
+\usepackage{enumerate}
+\usepackage{polski}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[top=2.5cm, bottom=2.5cm, left=2cm, right=2cm]{geometry}
+\makeatletter
+\newcommand\numerraportu[1]{\renewcommand\@title{Raport #1}}
+\renewcommand{\maketitle}{
+    \begin{center}
+        \vspace{5pt}
+        \textbf{\Huge \sffamily Wstęp do statystyki}\\
+        \vspace{15pt}
+        \textbf{\Large \sffamily \@title}\\
+        \vspace{10pt}
+        {\Large \sffamily Autor: \@author}\\
+        \vspace{10pt}
+        {\large\sffamily \@date}\\
+        \hrulefill\\
+        \vspace{20pt}
+    \end{center}
+}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\thepage}
+\fancyhead[L]{\@author}
+\setlength{\headsep}{10pt}
+\makeatother
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\author{Paweł Skrzypczyński}
+\date{08.04.2024}
+\numerraportu{2}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+
+<<ustawienia_globalne, echo=FALSE>>=
+library(knitr)
+library(xtable)
+knitr::opts_chunk$set(fig.align='center', fig.pos='H')
+pdf.options(encoding = 'CP1250')
+@
+\maketitle
+
+\tableofcontents
+\thispagestyle{plain}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Zadanie 1.}
+<<echo=FALSE>>=
+lab2<-read.csv("/Users/mac/downloads/lab2.csv", header=T)
+liczba_klas_1 <- ceiling((max(lab2$X1) - min(lab2$X1))/(2*IQR(lab2$X1)*length(lab2$X1)^(-1/3)))
+hist(lab2$X1, liczba_klas_1, main=expression("Histogram X"[1]), ylab="Zagęszczenie", xlab="Próbki", freq=FALSE)
+curve(dnorm(x, 0.25, 0.80), add=TRUE, col = "darkgreen")
+@
+Gęstość nałożona na histogram pochodzi z rozkładu normalnego o wartościach estymatorów parametrów $mean=0,25; sd=0,8$
+
+<<echo=FALSE>>=
+liczba_klas_2 <- ceiling((max(lab2$X2) - min(lab2$X2))/(2*IQR(lab2$X2)*length(lab2$X2)^(-1/3)))
+hist(lab2$X2, liczba_klas_2, main=expression("Histogram X"[2]), ylab="Zagęszczenie", xlab="Próbki", freq=FALSE)
+curve(dexp(x, 2), add=TRUE, col="darkgreen")
+@
+Gęstość nałożona na histogram pochodzi z rozkładu wykładniczego o wartości estymatora parametru $rate=2$
+
+<<echo=FALSE>>=
+liczba_klas_3 <- ceiling((max(lab2$X3) - min(lab2$X3))/(2*IQR(lab2$X3)*length(lab2$X3)^(-1/3)))
+hist(lab2$X3, liczba_klas_3, main=expression("Histogram X"[3]), ylab="Zagęszczenie", xlab="Próbki", freq=FALSE)
+curve(dgamma(x,  4, 2.2), add=TRUE, col="darkgreen")
+@
+Gęstość nałożona na histogram pochodzi z rozkładu gamma o wartościach estymatorów parametrów $shape=4; rate=2,2$
+
+<<echo=FALSE>>=
+liczba_klas_4 <- ceiling((max(lab2$X4) - min(lab2$X4))/(2*IQR(lab2$X4)*length(lab2$X4)^(-1/3)))
+hist(lab2$X4, liczba_klas_4, main=expression("Histogram X"[4]), ylab="Zagęszczenie", xlab="Próbki", freq=FALSE)
+curve(dweibull(x,  4.1, 0.46), add=TRUE, col="darkgreen")
+@
+Gęstość nałożona na histogram pochodzi z rozkładu Weibulla o wartościach estymatorów parametrów $shape=4,1; scale=0,46$
+
+<<echo=FALSE>>=
+liczba_klas_5 <- ceiling((max(lab2$X5) - min(lab2$X5))/(2*IQR(lab2$X5)*length(lab2$X5)^(-1/3)))
+hist(lab2$X5, liczba_klas_5, main=expression("Histogram X"[5]), ylab="Zagęszczenie", xlab="Próbki", freq=FALSE)
+curve(dunif(x, 3, 3.5), add=TRUE, col="darkgreen")
+@
+Gęstość nałożona na histogram pochodzi z rozkładu jednostajnego o wartościach estymatorów parametrów $min=3; max=3,5$
+\newpage
+\section{Zadanie 2.}
+\renewcommand{\theenumi}{\alph{enumi}}
+\begin{description}
+<<echo=FALSE>>=
+n <- rnorm(100, 1, 2)
+w <- rexp(100, 2)
+b <- rbeta(100, 1, 1)
+@
+  \item[(a)] Zgodność z rozkładem normalnym:
+    <<echo=FALSE>>=
+    qqplot(x=qnorm(ppoints(100), 1, 2), n, main=expression("Wykres kwantylowy dla próby z N(1,2"^2*")"), xlab="Teoretyczne kwantyle", ylab="Kwantyle próby")
+    qqline(y=n, distribution = function(p) qnorm(p, 1, 2), col="red")
+    @
+  
+  Można zauważyć, że pojawia się konfiguracja punktów, przypominająca linię prostą, lecz ogony odstają od niej.
+  
+  <<echo=FALSE>>=
+  qqplot(x=qnorm(ppoints(100), 1, 2), w, main=expression("Wykres kwantylowy dla próby z E(2)"), xlab="Teoretyczne kwantyle", ylab="Kwantyle próby")
+  qqline(y=w, distribution = function(p) qnorm(p, 1, 2), col="red")
+  @
+  
+  Obserwujemy nikłą konfigurację punktów, przypominającą linię prostą.
+  
+  <<echo=FALSE>>=
+  qqplot(x=qnorm(ppoints(100), 1, 2), b, main=expression("Wykres kwantylowy dla próby z B(1,1)"), xlab="Teoretyczne kwantyle", ylab="Kwantyle próby")
+  qqline(y=b, distribution = function(p) qnorm(p, 1, 2), col="red")
+  @
+  
+  Widzimy, że konfiguracja punktów przypomina linię prostą, z wyjątkiem ogonów.
+\newpage
+  \item[(b)] Zgodność z rozkładem wykładniczym:
+  <<echo=FALSE>>=
+    qqplot(x=qexp(ppoints(100), 2), n, main=expression("Wykres kwantylowy dla próby z N(1,2"^2*")"), xlab="Teoretyczne kwantyle", ylab="Kwantyle próby")
+    qqline(y=n, distribution = function(p) qexp(p, 2), col="red")
+    @
+    
+    Zauważmy, że konfiguracja tych punktów bardziej przypomina funkcję logarytmiczną, niż jakąkolwiek linię prostą.
+    
+    <<echo=FALSE>>=
+  qqplot(x=qexp(ppoints(100), 2), w, main=expression("Wykres kwantylowy dla próby z E(2)"), xlab="Teoretyczne kwantyle", ylab="Kwantyle próby")
+  qqline(y=w, distribution = function(p) qexp(p, 2), col="red")
+  @
+  
+  Obserwujemy konfigurację arbitralnie przypominającą linię prostą.
+  
+  <<echo=FALSE>>=
+  qqplot(x=qexp(ppoints(100), 2), b, main=expression("Wykres kwantylowy dla próby z B(1,1)"), xlab="Teoretyczne kwantyle", ylab="Kwantyle próby")
+  qqline(y=b, distribution = function(p) qexp(p, 2), col="red")
+  @
+  Widzimy konfigurację, która wygląda podobniej do wykresu funkcji logarytmicznej, niż prostej linii.
+\newpage
+  \item[(c)] Zgodność z rozkładem beta:
+  <<echo=FALSE>>=
+  qqplot(x=qbeta(ppoints(100), 1, 1), n, main=expression("Wykres kwantylowy dla próby z N(1,2"^2*")"), xlab="Teoretyczne kwantyle", ylab="Kwantyle próby")
+    qqline(y=n, distribution = function(p) qbeta(p, 1, 1), col="red")
+    @
+    
+    Obserwujemy konfigurację całkiem zbliżoną do linii prostej.
+    
+   <<echo=FALSE>>=
+  qqplot(x=qbeta(ppoints(100), 1, 1), w, main=expression("Wykres kwantylowy dla próby z E(2)"), xlab="Teoretyczne kwantyle", ylab="Kwantyle próby")
+  qqline(y=w, distribution = function(p) qbeta(p, 1, 1), col="red")
+  @ 
+  
+  Widzimy kształ, który wcale nie wygląda na linię prostą.
+  
+  <<echo=FALSE>>=
+  qqplot(x=qbeta(ppoints(100), 1, 1), b, main=expression("Wykres kwantylowy dla próby z B(1,1)"), xlab="Teoretyczne kwantyle", ylab="Kwantyle próby")
+  qqline(y=b, distribution = function(p) qbeta(p, 1, 1), col="red")
+  @
+  
+  Zauważmy, że konfiguracja tych punktów nad wyraz przypomina linię prostą. 
+\end{description}
+\newpage
+\section{Zadanie 3.}
+<<echo=FALSE>>=
+n1 <- rnorm(200, 0, 1)
+n2 <- rnorm(200, 0, 2)
+n3 <- rnorm(200, 1, 1)
+n4 <- rnorm(200, 1, 3)
+boxplot(n1, n2, n3, n4, col=c("red", "green", "yellow", "blue"), main=expression("Wykresy pudełkowe dla prób z rozkładów: N(0,1), N(1,2"^2*"), N(1,1), N(1,3"^2*") "))
+grid(lty="longdash", col="grey")
+m <- median(n1)
+q1 <- quantile(n1, 0.25)
+q3 <- quantile(n1, 0.75)
+  @
+  
+  Boxploty różnią się wysokością pudełek oraz wysokością ich punktu zaczepienia.
+  Odczytując z wykresu: mediana wynosi $-0,07$, pierwszy kwartyl $-0,8$, a trzeci $0,6$. Rzeczywiste wartości tych parametrów, to kolejno:
+  <<echo=FALSE, results="tex">>=
+  m <- quantile(n1, 0.5)
+  q1 <- quantile(n1, 0.25)
+  q3 <- quantile(n1, 0.75)
+  print(c(m,q1,q3))
+  @
+\end{document}

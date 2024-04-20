@@ -1,0 +1,133 @@
+% !Rnw weave = knitr  
+\documentclass[12pt, a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[colorlinks=true, linkcolor=blue]{hyperref}
+\usepackage{amsmath, amsthm, amssymb, amscd}
+\usepackage{enumerate}
+\usepackage{polski}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[top=2.5cm, bottom=2.5cm, left=2cm, right=2cm]{geometry}
+\makeatletter
+\newcommand\numerraportu[1]{\renewcommand\@title{Raport #1}}
+\renewcommand{\maketitle}{
+    \begin{center}
+        \vspace{5pt}
+        \textbf{\Huge \sffamily Wstęp do statystyki}\\
+        \vspace{15pt}
+        \textbf{\Large \sffamily \@title}\\
+        \vspace{10pt}
+        {\Large \sffamily Autor: \@author}\\
+        \vspace{10pt}
+        {\large\sffamily \@date}\\
+        \hrulefill\\
+        \vspace{20pt}
+    \end{center}
+}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\thepage}
+\fancyhead[L]{\@author}
+\setlength{\headsep}{10pt}
+\makeatother
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\author{Paweł Skrzypczyński}
+\date{24.03.2024}
+\numerraportu{1}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+
+<<ustawienia_globalne, echo=FALSE>>=
+library(knitr)
+library(xtable)
+knitr::opts_chunk$set(fig.align='center', fig.pos='H')
+pdf.options(encoding = 'CP1250')
+@
+\maketitle
+
+\tableofcontents
+\thispagestyle{plain}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Zadanie 1.}
+<<echo=FALSE>>=
+data<-read.table("/Users/mac/lab1_dane.txt", header=T)
+category_counts <- table(data$typ)
+pie_colors <- rainbow(length(category_counts))
+l <- length(data$typ)
+p <- c(round(category_counts * (100/l), 2))
+k <- paste(names(category_counts),"(",p,"%" ,")")
+pie(category_counts, labels=k, main = 'Wykres kołowy typu zawodu', col=pie_colors, radius=0.6)
+legend(-1.1, -0.5, legend=c("1-kierownik", "2-sprzedawca/marketing", "3-urzędnik", "4-obsługa", "5-wolny zawód", "6-inne"), fill = pie_colors, border = "white", bty = 'n')
+@
+
+\section{Zadanie 2.}
+<<echo=TRUE>>=
+breaks <- c(-Inf, 8, 12, Inf)
+data$wykszt <- cut(data$edu, breaks = breaks, labels = c(1,2,3)
+                   , include.lowest = TRUE)
+data$zarobki <- lapply(data$zarobki, function(x) gsub(",", ".", x))
+dolar_do_zl <- 3.98
+data$pensja <- as.numeric(data$zarobki) * 8 * 22 * dolar_do_zl
+@
+\section{Zadanie 3.}
+<<echo=FALSE, results='hide'>>=
+sum <- rbind(summary(data$pensja))
+xtable1 <- xtable(sum, label="Podsumowanie pensji")
+@
+<<echo=FALSE, results='asis'>>=
+print(xtable1, include.rownames = FALSE)
+@
+
+\section{Zadanie 4.}
+<<echo=FALSE, results='asis'>>=
+podstawowe <- summary(data$pensja[data$wykszt == 1])
+średnie <- summary(data$pensja[data$wykszt == 2])
+wyższe <- summary(data$pensja[data$wykszt == 3])
+
+pensja_a_wykszt <- rbind(podstawowe, średnie, wyższe)
+pensja_a_wykszt_df <- as.data.frame(pensja_a_wykszt)
+
+xtable2 <- xtable(pensja_a_wykszt, label="Podsumowania poziomów wykształceń")
+xtable2
+
+boxplot(t(pensja_a_wykszt_df), col = c("red", "green", "blue"), main="Łączne wykresy pudełkowe"
+        , xlab="Wykształcenie", ylab="Pensja")
+@
+\textbf{Wnioski z wykresów pudełkowcyh:}\\
+We wszystkich próbach pojawiają się obserwacje odstające. Im wyższe wykształcenie tym większa pensja.
+
+\section{Zadanie 5.}
+<<echo=FALSE>>=
+hist(data$pensja, main="Histogram pensji wyglądający „dobrze”", xlab="Pensja", ylab="Zagęszczenie")
+liczba_klas <- ceiling((max(data$pensja) - min(data$pensja))/(2*IQR(data$pensja)*length(data$pensja)^(-1/3)))
+hist(data$pensja, liczba_klas, freq=FALSE, main="Histogram pensji z liczbą klas według reguły F-D", xlab="Pensja", ylab="Zagęszczenie")
+curve(dgamma(x, shape=3.5, scale=1450), add=TRUE, col = "darkgreen")
+curve(dnorm(x, 3780,2300), add =TRUE, col = "red")
+legend("topright", c("Gamma", "Normalny"), fill=c("darkgreen", "red"), border = "white")
+@
+\textbf{Wniosek}\\
+Najlepiej pasuje gęstość rozkładu gamma o parametrach: shape=3,6 oraz scale=1450
+
+\newpage
+\section{Zadanie 6.}
+<<echo=FALSE>>=
+tablica_licz = table(data$rasa, data$wykszt)
+rownames(tablica_licz) = c("Rasa biała", "Rasa amerykańska centralna/południowa"
+                           , "Rasa inna")
+colnames(tablica_licz) = c("Wykształcenie podstawowe", "średnie"
+                           ,"wyższe")
+tablica_proc = round(prop.table(tablica_licz)*100, 2)
+@
+<<echo=FALSE, results='asis'>>=
+xtable(tablica_licz)
+xtable(tablica_proc)
+@
+\end{document}

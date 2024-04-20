@@ -12,29 +12,31 @@ curve(pexp(x, 1), add=TRUE, col="blue")
 legend(2, 0.5, legend=c("Dystrybuanta empiryczna", "Dystrybuanta teoretyczna"),
        fill = c("green", "blue"), border = "white", text.width = 1.3)
 
-
-M = 1000
-alpha <- 0.05
-n <- 100
-eps <- (log(2/alpha)/(2*n))^(1/2)
-L <- function(x){
-  E <- ecdf(X)
-  max(E(x) - eps, 0)}
-U <- function(x){
-  E <- ecdf(X)
-  min(E(x) + eps, 1)}
-
-for (i in 1:M){
-  X <- rnorm(n)
-  G <- c(1:n)
-  for (j in 1:n){
-    G[j] <- U(X[j])}
-  D <- c(1:n)
-  for (i in 1:n){
-    D[i] <- L(X[i])}
+Symulator <- function(F, M=1000, alpha=0.05, n=100, R){
+  eps <- (log(2/alpha)/(2*n))^(1/2)
+  L <- function(x, E){
+    max(E(x) - eps, 0)}
+  U <- function(x, E){
+    min(E(x) + eps, 1)}
+  I <- 0
+  for (b in 1:M){
+    X <- R(n)
+    G <- c(1:100)
+    D <- c(1:100)
+    E <- ecdf(X)
+    x <- seq(-5, 5, length=100)
+    l <- 0
+    for (i in 1:100){
+      if (L(x[i], E)<=F(x[i]) & F(x[i]) <= U(x[i], E)){
+        l <- l +1}
+    }
+    if(l==100){
+      I <- I +1}
+    }
+  return(I)
 }
-
-
+Symulator(pnorm, R=rnorm)
+Symulator(pexp, R=rexp)
 
 #zad3
 n <- rnorm(500)a
@@ -68,3 +70,6 @@ curve(dnorm(x, 1.6, (0.48)^(1/2)), -4, 10, col="red", ylab="y")
 hist(y, liczba_klas, freq=FALSE, add=TRUE, col="yellow")
 lines(density(y, kernel="gaussian"), col="blue")
 legend("topright", legend=c("gęstość", "histogram z regułą F-D", "estymator jądrowy z regułą Silvermana"), fill=c("red", "yellow", "blue"))
+
+
+
